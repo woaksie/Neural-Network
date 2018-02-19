@@ -6,18 +6,15 @@ namespace NeuralNetwork.NetworkModels
 {
 	public class Neuron
 	{
-		#region -- Properties --
-		public Guid Id { get; set; }
+	    public Guid Id { get; set; }
 		public List<Synapse> InputSynapses { get; set; }
 		public List<Synapse> OutputSynapses { get; set; }
 		public double Bias { get; set; }
 		public double BiasDelta { get; set; }
 		public double Gradient { get; set; }
 		public double Value { get; set; }
-		#endregion
 
-		#region -- Constructors --
-		public Neuron()
+	    public Neuron()
 		{
 			Id = Guid.NewGuid();
 			InputSynapses = new List<Synapse>();
@@ -34,10 +31,8 @@ namespace NeuralNetwork.NetworkModels
 				InputSynapses.Add(synapse);
 			}
 		}
-		#endregion
 
-		#region -- Values & Weights --
-		public virtual double CalculateValue()
+	    public virtual double CalculateValue()
 		{
 			return Value = Sigmoid.Output(InputSynapses.Sum(a => a.Weight * a.InputNeuron.Value) + Bias);
 		}
@@ -68,6 +63,5 @@ namespace NeuralNetwork.NetworkModels
 				synapse.Weight += synapse.WeightDelta + momentum * prevDelta;
 			}
 		}
-		#endregion
 	}
 }

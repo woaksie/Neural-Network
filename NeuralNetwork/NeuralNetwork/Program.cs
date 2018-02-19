@@ -8,26 +8,21 @@ namespace NeuralNetwork
 {
 	internal class Program
 	{
-		#region -- Variables --
-		private static int _numInputParameters;
+	    private static int _numInputParameters;
 		private static int _numHiddenLayers;
 		private static int[] _hiddenNeurons;
 		private static int _numOutputParameters;
 		private static Network _network;
 		private static List<DataSet> _dataSets;
-		#endregion
 
-		#region -- Main --
-		[STAThread]
+	    [STAThread]
 		private static void Main()
 		{
 			Greet();
 			InitialMenu();
 		}
-		#endregion
 
-		#region -- Network Setup --
-		private static void Greet()
+	    private static void Greet()
 		{
 			Console.WriteLine("C# Neural Network Manager");
 			Console.WriteLine("Created by Trent Sartain (trentsartain on GitHub)");
@@ -287,10 +282,8 @@ namespace NeuralNetwork
 
 			return values;
 		}
-		#endregion
 
-		#region -- Network Training --
-		private static void TestNetwork()
+	    private static void TestNetwork()
 		{
 			Console.WriteLine("\tTesting Network");
 			Console.WriteLine("\tType 'menu' at any time to return to the previous menu.");
@@ -357,10 +350,8 @@ namespace NeuralNetwork
 			}
 			PrintNewLine();
 		}
-		#endregion
 
-		#region -- I/O Help --
-		private static void ImportNetwork()
+	    private static void ImportNetwork()
 		{
 			PrintNewLine();
 			_network = ImportHelper.ImportNetwork();
@@ -415,11 +406,8 @@ namespace NeuralNetwork
 			Console.WriteLine("\t**Exporting Complete!**");
 			PrintNewLine();
 		}
-		#endregion
 
-		#region -- Console Helpers --
-
-		private static string GetLine()
+	    private static string GetLine()
 		{
 			var line = Console.ReadLine();
 			return line?.Trim() ?? string.Empty;
@@ -519,6 +507,5 @@ namespace NeuralNetwork
 			Console.ReadLine();
 			Environment.Exit(0);
 		}
-		#endregion
 	}
 }

@@ -6,20 +6,15 @@ namespace NeuralNetwork.NetworkModels
 {
 	public class Network
 	{
-		#region -- Properties --
-		public double LearnRate { get; set; }
+	    public double LearnRate { get; set; }
 		public double Momentum { get; set; }
 		public List<Neuron> InputLayer { get; set; }
 		public List<List<Neuron>> HiddenLayers { get; set; }
 		public List<Neuron> OutputLayer { get; set; }
-		#endregion
 
-		#region -- Globals --
-		private static readonly Random Random = new Random();
-		#endregion
+	    private static readonly Random Random = new Random();
 
-		#region -- Constructor --
-		public Network()
+	    public Network()
 		{
 			LearnRate = 0;
 			Momentum = 0;
@@ -56,10 +51,8 @@ namespace NeuralNetwork.NetworkModels
 			for (var i = 0; i < outputSize; i++)
 				OutputLayer.Add(new Neuron(HiddenLayers.Last()));
 		}
-		#endregion
 
-		#region -- Training --
-		public void Train(List<DataSet> dataSets, int numEpochs)
+	    public void Train(List<DataSet> dataSets, int numEpochs)
 		{
 			for (var i = 0; i < numEpochs; i++)
 			{
@@ -120,21 +113,16 @@ namespace NeuralNetwork.NetworkModels
 			var i = 0;
 			return OutputLayer.Sum(a => Math.Abs(a.CalculateError(targets[i++])));
 		}
-		#endregion
 
-		#region -- Helpers --
-		public static double GetRandom()
+	    public static double GetRandom()
 		{
 			return 2 * Random.NextDouble() - 1;
 		}
-		#endregion
 	}
 
-	#region -- Enum --
-	public enum TrainingType
+    public enum TrainingType
 	{
 		Epoch,
 		MinimumError
 	}
-	#endregion
 }
