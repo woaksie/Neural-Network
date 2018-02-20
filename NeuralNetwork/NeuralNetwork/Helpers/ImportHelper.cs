@@ -106,7 +106,9 @@ namespace NeuralNetwork.Helpers
 
 				using (dialog)
 				{
-					if (dialog.ShowDialog() != DialogResult.OK) return null;
+					if (dialog.ShowDialog() != DialogResult.OK)
+					    return null;
+
 					using (var file = File.OpenText(dialog.FileName))
 					{
 						return JsonConvert.DeserializeObject<List<DataSet>>(file.ReadToEnd());
@@ -118,6 +120,18 @@ namespace NeuralNetwork.Helpers
 				return null;
 			}
 		}
+
+	    public static List<DataSet> ExtractDatasets()
+	    {
+	        try
+	        {
+	            return null; // todo: hook up
+	        }
+	        catch (Exception)
+	        {
+	            return null;
+	        }
+	    }
 
 		private static HelperNetwork GetHelperNetwork()
 		{

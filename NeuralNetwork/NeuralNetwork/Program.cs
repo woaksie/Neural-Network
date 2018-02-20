@@ -60,35 +60,42 @@ namespace NeuralNetwork
 			Console.WriteLine("Dataset Menu");
 			PrintUnderline(50);
 			Console.WriteLine("\t1. Type Dataset");
-			Console.WriteLine("\t2. Import Dataset");
-			Console.WriteLine("\t3. Test Network");
-			Console.WriteLine("\t4. Export Network");
-			Console.WriteLine("\t5. Main Menu");
-			Console.WriteLine("\t6. Exit");
+            Console.WriteLine("\t2. Extract Dataset");
+			Console.WriteLine("\t3. Import Dataset");
+			Console.WriteLine("\t4. Test Network");
+			Console.WriteLine("\t5. Export Network");
+			Console.WriteLine("\t6. Main Menu");
+			Console.WriteLine("\t7. Exit");
 			PrintNewLine();
 
-			switch (GetInput("\tYour Choice: ", 1, 6))
+			switch (GetInput("\tYour Choice: ", 1, 7))
 			{
 				case 1:
-					if (GetTrainingData()) NetworkMenu();
-					else DatasetMenu();
+					if (GetTrainingData())
+					    NetworkMenu();
+					else
+					    DatasetMenu();
 					break;
-				case 2:
+			    case 2:
+			        ExtractDatasets();
+			        NetworkMenu();
+			        break;
+				case 3:
 					ImportDatasets();
 					NetworkMenu();
 					break;
-				case 3:
+				case 4:
 					TestNetwork();
 					DatasetMenu();
 					break;
-				case 4:
+				case 5:
 					ExportNetwork();
 					DatasetMenu();
 					break;
-				case 5:
+				case 6:
 					InitialMenu();
 					break;
-				case 6:
+				case 7:
 					Exit();
 					break;
 			}
@@ -397,6 +404,27 @@ namespace NeuralNetwork
 			Console.WriteLine("\t**Datasets successfully imported.**");
 			PrintNewLine();
 		}
+
+	    private static void ExtractDatasets()
+	    {
+	        PrintNewLine();
+	        _dataSets = ImportHelper.ExtractDatasets();
+
+	        if (_dataSets == null)
+	        {
+	            WriteError("\t--Something went wrong while extracting your datasets.--");
+	            return;
+	        }
+
+	        if (_dataSets.Any(x => x.Values.Length != _numInputParameters || _dataSets.Any(y => y.Targets.Length != _numOutputParameters)))
+	        {
+	            WriteError($"\t--The dataset does not fit the network.  Network requires datasets that have {_numInputParameters} inputs and {_numOutputParameters} outputs.--");
+	            return;
+	        }
+
+	        Console.WriteLine("\t**Datasets successfully extracted.**");
+	        PrintNewLine();
+	    }
 
 		private static void ExportDatasets()
 		{
