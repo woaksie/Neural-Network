@@ -52,7 +52,7 @@ namespace NeuralNetwork.NetworkModels
 				OutputLayer.Add(new Neuron(HiddenLayers.Last()));
 		}
 
-	    public void Train(List<DataSet> dataSets, int numEpochs)
+	    public void Train(IList<DataSet> dataSets, int numEpochs)
 		{
 			for (var i = 0; i < numEpochs; i++)
 			{
@@ -64,7 +64,7 @@ namespace NeuralNetwork.NetworkModels
 			}
 		}
 
-		public void Train(List<DataSet> dataSets, double minimumError)
+		public void Train(IList<DataSet> dataSets, double minimumError)
 		{
 			var error = 1.0;
 			var numEpochs = 0;

@@ -29,7 +29,7 @@ namespace NeuralNetwork.Helpers
 			}
 		}
 
-		public static void ExportDatasets(List<DataSet> datasets)
+		public static void ExportDatasets(IList<DataSet> datasets)
 		{
 			var dialog = new SaveFileDialog
 			{

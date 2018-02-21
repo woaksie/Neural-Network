@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 using System.IO;
 using System.Linq;
+using NeuralNetwork.Database;
 using NeuralNetwork.NetworkModels;
 using Newtonsoft.Json;
 
@@ -120,25 +121,6 @@ namespace NeuralNetwork.Helpers
 				return null;
 			}
 		}
-
-	    public static List<DataSet> ExtractDatasets()
-	    {
-	        try
-	        {
-	            return new List<DataSet>
-	            {
-	                new DataSet(new[] {1D, 2D, 3D}, new[] {0D}),
-	                new DataSet(new[] {2D, 3D, 4D}, new[] {0D}),
-	                new DataSet(new[] {3D, 4D, 5D}, new[] {1D}),
-	                new DataSet(new[] {4D, 5D, 6D}, new[] {1D}),
-	                new DataSet(new[] {5D, 6D, 7D}, new[] {0D}),
-	            };
-	        }
-	        catch (Exception)
-	        {
-	            return null;
-	        }
-	    }
 
 		private static HelperNetwork GetHelperNetwork()
 		{

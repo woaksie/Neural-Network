@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NeuralNetwork.Database;
 using NeuralNetwork.Helpers;
 using NeuralNetwork.NetworkModels;
 
@@ -13,12 +14,15 @@ namespace NeuralNetwork
 		private static int[] _hiddenNeurons;
 		private static int _numOutputParameters;
 		private static Network _network;
-		private static List<DataSet> _dataSets;
+		private static IList<DataSet> _dataSets;
+	    private static SQLDatabase _sqlDatabase;
+	    private static DataSet _lastDataSet;
 
 	    [STAThread]
 		private static void Main()
 		{
-			Greet();
+		    _sqlDatabase = SQLDatabase.Instance;
+		    Greet();
 			InitialMenu();
 		}
 
@@ -36,39 +40,54 @@ namespace NeuralNetwork
 			PrintUnderline(50);
 			Console.WriteLine("\t1. New Network");
 			Console.WriteLine("\t2. Import Network");
-			Console.WriteLine("\t3. Exit");
+		    Console.WriteLine("\t3. Get Stock Network");
+			Console.WriteLine("\t4. Exit");
 			PrintNewLine();
 
-			switch (GetInput("\tYour Choice: ", 1, 3))
+			switch (GetInput("\tYour Choice: ", 1, 4))
 			{
 				case 1:
-					if (SetupNetwork()) DatasetMenu();
-					else InitialMenu();
+					if (SetupNetwork())
+					    DatasetMenu();
+					else
+					    InitialMenu();
 					break;
 				case 2:
 					ImportNetwork();
 					DatasetMenu();
 					break;
-				case 3:
+                case 3:
+                    _lastDataSet = ExtractStockNetwork();
+                    if (SetupNetwork())
+                        NetworkMenu();
+                    else
+                        InitialMenu();
+                    break;
+				case 4:
 					Exit();
 					break;
 			}
 		}
 
-		private static void DatasetMenu()
+	    private static DataSet ExtractStockNetwork()
+	    {
+	        _dataSets = _sqlDatabase.ReadData("QTEC").GetData();
+	        return TestTargets.SetupTargetValues(_dataSets);
+	    }
+
+	    private static void DatasetMenu()
 		{
 			Console.WriteLine("Dataset Menu");
 			PrintUnderline(50);
 			Console.WriteLine("\t1. Type Dataset");
-            Console.WriteLine("\t2. Extract Dataset");
-			Console.WriteLine("\t3. Import Dataset");
-			Console.WriteLine("\t4. Test Network");
-			Console.WriteLine("\t5. Export Network");
-			Console.WriteLine("\t6. Main Menu");
-			Console.WriteLine("\t7. Exit");
+			Console.WriteLine("\t2. Import Dataset");
+			Console.WriteLine("\t3. Test Network");
+			Console.WriteLine("\t4. Export Network");
+			Console.WriteLine("\t5. Main Menu");
+			Console.WriteLine("\t6. Exit");
 			PrintNewLine();
 
-			switch (GetInput("\tYour Choice: ", 1, 7))
+			switch (GetInput("\tYour Choice: ", 1, 6))
 			{
 				case 1:
 					if (GetTrainingData())
@@ -76,26 +95,22 @@ namespace NeuralNetwork
 					else
 					    DatasetMenu();
 					break;
-			    case 2:
-			        ExtractDatasets();
-			        NetworkMenu();
-			        break;
-				case 3:
+				case 2:
 					ImportDatasets();
 					NetworkMenu();
 					break;
-				case 4:
+				case 3:
 					TestNetwork();
 					DatasetMenu();
 					break;
-				case 5:
+				case 4:
 					ExportNetwork();
 					DatasetMenu();
 					break;
-				case 6:
+				case 5:
 					InitialMenu();
 					break;
-				case 7:
+				case 6:
 					Exit();
 					break;
 			}
@@ -149,26 +164,36 @@ namespace NeuralNetwork
 			PrintNewLine();
 			Console.WriteLine("Network Setup");
 			PrintUnderline(50);
-			SetNumInputParameters();
-			if (_numInputParameters == 0) return false;
+
+		    SetNumInputParameters();
+			if (_numInputParameters == 0)
+			    return false;
 			SetNumNeuronsInHiddenLayer();
-			if (_numHiddenLayers == 0) return false;
+			if (_numHiddenLayers == 0)
+			    return false;
 			SetNumOutputParameters();
-			if (_numInputParameters == 0) return false;
+			if (_numOutputParameters == 0)
+			    return false;
 
 			Console.WriteLine("\tCreating Network...");
 			_network = new Network(_numInputParameters, _hiddenNeurons, _numOutputParameters);
-			Console.WriteLine("\t**Network Created!**");
+
+		    Console.WriteLine("\t**Network Created!**");
 			PrintNewLine();
 			return true;
 		}
 
 		private static void SetNumInputParameters()
 		{
-			Console.WriteLine("\tHow many input parameters will there be? (2 or more)");
-			_numInputParameters = GetInput("\tInput Parameters: ", 2, int.MaxValue) ?? 0;
-			PrintNewLine(2);
-		}
+		    if (_dataSets != null && _dataSets.Count > 0)
+		        _numInputParameters = _dataSets[0].Values.Length;
+		    else
+		    {
+		        Console.WriteLine("\tHow many input parameters will there be? (2 or more)");
+		        _numInputParameters = GetInput("\tInput Parameters: ", 2, int.MaxValue) ?? 0;
+		        PrintNewLine(2);
+		    }
+        }
 
 		private static void SetNumNeuronsInHiddenLayer()
 		{
@@ -182,9 +207,14 @@ namespace NeuralNetwork
 
 		private static void SetNumOutputParameters()
 		{
-			Console.WriteLine("\tHow many output parameters will there be? (1 or more)");
-			_numOutputParameters = GetInput("\tOutput Parameters: ", 1, int.MaxValue) ?? 0;
-			PrintNewLine(2);
+		    if (_dataSets != null && _dataSets.Count > 0)
+		        _numOutputParameters = _dataSets[0].Targets.Length;
+		    else
+		    {
+		        Console.WriteLine("\tHow many output parameters will there be? (1 or more)");
+		        _numOutputParameters = GetInput("\tOutput Parameters: ", 1, int.MaxValue) ?? 0;
+		        PrintNewLine(2);
+		    }
 		}
 
 		private static bool GetTrainingData()
@@ -291,34 +321,44 @@ namespace NeuralNetwork
 		}
 
 	    private static void TestNetwork()
-		{
-			Console.WriteLine("\tTesting Network");
-			Console.WriteLine("\tType 'menu' at any time to return to the previous menu.");
-			PrintNewLine();
+	    {
+	        Console.WriteLine("\tTesting Network");
+	        Console.WriteLine("\tType 'menu' at any time to return to the previous menu.");
+	        PrintNewLine();
 
-			while (true)
-			{
-				PrintUnderline(50);
-				var values = GetInputData($"\tType {_numInputParameters} inputs (or 'menu' to exit): ");
-				if (values == null)
-				{
-					PrintNewLine();
-					return;
-				}
+	        if (_lastDataSet != null)
+	        {
+	            ComputeAndPrint(_lastDataSet.Values);
+	        }
+	        else
+	            while (true)
+	            {
+	                PrintUnderline(50);
+	                var values = GetInputData($"\tType {_numInputParameters} inputs (or 'menu' to exit): ");
+	                if (values == null)
+	                {
+	                    PrintNewLine();
+	                    return;
+	                }
 
-				var results = _network.Compute(values);
-				PrintNewLine();
+	                ComputeAndPrint(values);
+	            }
+	    }
 
-				foreach (var result in results)
-				{
-					Console.WriteLine($"\tOutput: {result}");
-				}
+	    private static void ComputeAndPrint(double[] values)
+	    {
+	        var results = _network.Compute(values);
+	        PrintNewLine();
 
-				PrintNewLine();
-			}
-		}
+	        foreach (var result in results)
+	        {
+	            Console.WriteLine($"\tOutput: {result}");
+	        }
 
-		private static void Train()
+	        PrintNewLine();
+	    }
+
+	    private static void Train()
 		{
 			Console.WriteLine("Network Training");
 			PrintUnderline(50);
@@ -405,27 +445,6 @@ namespace NeuralNetwork
 			PrintNewLine();
 		}
 
-	    private static void ExtractDatasets()
-	    {
-	        PrintNewLine();
-	        _dataSets = ImportHelper.ExtractDatasets();
-
-	        if (_dataSets == null)
-	        {
-	            WriteError("\t--Something went wrong while extracting your datasets.--");
-	            return;
-	        }
-
-	        if (_dataSets.Any(x => x.Values.Length != _numInputParameters || _dataSets.Any(y => y.Targets.Length != _numOutputParameters)))
-	        {
-	            WriteError($"\t--The dataset does not fit the network.  Network requires datasets that have {_numInputParameters} inputs and {_numOutputParameters} outputs.--");
-	            return;
-	        }
-
-	        Console.WriteLine("\t**Datasets successfully extracted.**");
-	        PrintNewLine();
-	    }
-
 		private static void ExportDatasets()
 		{
 			PrintNewLine();
@@ -508,7 +527,6 @@ namespace NeuralNetwork
 			var line = GetLine();
 			return line != null && double.TryParse(line, out num) ? num : 0;
 		}
-
 
 		private static void PrintNewLine(int numNewLines = 1)
 		{
