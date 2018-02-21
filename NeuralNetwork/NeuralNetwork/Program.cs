@@ -72,7 +72,8 @@ namespace NeuralNetwork
 	    private static DataSet ExtractStockNetwork()
 	    {
 	        _dataSets = _sqlDatabase.ReadData("QTEC").GetData();
-	        return TestTargets.SetupTargetValues(_dataSets);
+            var ss = new TestDataPrep(_dataSets);
+	        return ss.SetupTargetValues().Last();
 	    }
 
 	    private static void DatasetMenu()

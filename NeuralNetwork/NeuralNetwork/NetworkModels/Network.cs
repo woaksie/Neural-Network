@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace NeuralNetwork.NetworkModels
@@ -53,7 +54,8 @@ namespace NeuralNetwork.NetworkModels
 		}
 
 	    public void Train(IList<DataSet> dataSets, int numEpochs)
-		{
+	    {
+	        var sw = Stopwatch.StartNew();
 			for (var i = 0; i < numEpochs; i++)
 			{
 				foreach (var dataSet in dataSets)
@@ -62,14 +64,17 @@ namespace NeuralNetwork.NetworkModels
 					BackPropagate(dataSet.Targets);
 				}
 			}
-		}
+            var time = sw.Elapsed;
+            Console.WriteLine($"Took {time.TotalMinutes} minutes");
+	    }
 
 		public void Train(IList<DataSet> dataSets, double minimumError)
 		{
 			var error = 1.0;
 			var numEpochs = 0;
 
-			while (error > minimumError && numEpochs < int.MaxValue)
+		    var sw = Stopwatch.StartNew();
+			while (error > minimumError && numEpochs < 100000000)
 			{
 				var errors = new List<double>();
 				foreach (var dataSet in dataSets)
@@ -81,9 +86,11 @@ namespace NeuralNetwork.NetworkModels
 				error = errors.Average();
 				numEpochs++;
 			}
+		    var time = sw.Elapsed;
+		    Console.WriteLine($"Took {time.TotalMinutes} minutes");
 		}
 
-		private void ForwardPropagate(params double[] inputs)
+        private void ForwardPropagate(params double[] inputs)
 		{
 			var i = 0;
 			InputLayer.ForEach(a => a.Value = inputs[i++]);
