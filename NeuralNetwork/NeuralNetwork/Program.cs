@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using NeuralNetwork.Database;
+using NeuralNetwork.DataPrep;
 using NeuralNetwork.Helpers;
 using NeuralNetwork.NetworkModels;
 
@@ -71,8 +72,9 @@ namespace NeuralNetwork
 
 	    private static DataSet ExtractStockNetwork()
 	    {
-	        _dataSets = _sqlDatabase.ReadData("QTEC").GetData();
-            var ss = new TestDataPrep(_dataSets);
+	        _dataSets = null;
+	        var ds = _sqlDatabase.ReadData("QTEC").GetData();
+            var ss = new TestDataPrep(ds);
 	        return ss.SetupTargetValues().Last();
 	    }
 
@@ -187,7 +189,7 @@ namespace NeuralNetwork
 		private static void SetNumInputParameters()
 		{
 		    if (_dataSets != null && _dataSets.Count > 0)
-		        _numInputParameters = _dataSets[0].Values.Length;
+		        _numInputParameters = _dataSets[0].SourceData.Count();
 		    else
 		    {
 		        Console.WriteLine("\tHow many input parameters will there be? (2 or more)");
@@ -329,7 +331,7 @@ namespace NeuralNetwork
 
 	        if (_lastDataSet != null)
 	        {
-	            ComputeAndPrint(_lastDataSet.Values);
+	            ComputeAndPrint(_lastDataSet.SourceData.ToArray());
 	        }
 	        else
 	            while (true)
@@ -436,7 +438,7 @@ namespace NeuralNetwork
 				return;
 			}
 
-			if (_dataSets.Any(x => x.Values.Length != _numInputParameters || _dataSets.Any(y => y.Targets.Length != _numOutputParameters)))
+			if (_dataSets.Any(x => x.SourceData.Count() != _numInputParameters || _dataSets.Any(y => y.Targets.Length != _numOutputParameters)))
 			{
 				WriteError($"\t--The dataset does not fit the network.  Network requires datasets that have {_numInputParameters} inputs and {_numOutputParameters} outputs.--");
 				return;

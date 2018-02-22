@@ -60,7 +60,7 @@ namespace NeuralNetwork.NetworkModels
 			{
 				foreach (var dataSet in dataSets)
 				{
-					ForwardPropagate(dataSet.Values);
+					ForwardPropagate(dataSet.SourceData.ToArray());
 					BackPropagate(dataSet.Targets);
 				}
 			}
@@ -79,7 +79,7 @@ namespace NeuralNetwork.NetworkModels
 				var errors = new List<double>();
 				foreach (var dataSet in dataSets)
 				{
-					ForwardPropagate(dataSet.Values);
+					ForwardPropagate(dataSet.SourceData.ToArray());
 					BackPropagate(dataSet.Targets);
 					errors.Add(CalculateError(dataSet.Targets));
 				}

@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using NeuralNetwork.NetworkModels;
 
 namespace NeuralNetwork.Database
 {
@@ -80,43 +78,6 @@ namespace NeuralNetwork.Database
             return new DataElement(key,
                 new double[]
                     {(double) open, (double) close, (double) high, (double) low, vol, (double) fdc, (double) mom});
-        }
-    }
-
-    public class PureData
-    {
-        private readonly List<DataElement> _result;
-
-        public PureData(List<DataElement> result)
-        {
-            _result = result;
-        }
-
-        public IList<DataSet> GetData()
-        {
-            var result = new List<DataSet>(_result.Count);
-
-            foreach (DataElement element in _result)
-                result.Add(new DataSet(element.Values, null));
-
-            return result;
-        }
-    }
-
-    public class DataElement
-    {
-        private DateTime _key;
-        private double[] _values;
-
-        public DataElement(DateTime key, double[] values)
-        {
-            this._key = key;
-            this._values = values;
-        }
-
-        public double[] Values
-        {
-            get { return _values; }
         }
     }
 }

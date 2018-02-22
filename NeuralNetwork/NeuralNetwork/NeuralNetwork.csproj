@@ -46,7 +46,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Database\DataElement.cs" />
+    <Compile Include="Database\PureData.cs" />
     <Compile Include="Database\SQLDatabase.cs" />
+    <Compile Include="DataPrep\DataPrepper.cs" />
+    <Compile Include="DataPrep\IInputGenerator.cs" />
+    <Compile Include="DataPrep\IInputsGeneratorFactory.cs" />
+    <Compile Include="DataPrep\ITargetGenerator.cs" />
+    <Compile Include="DataPrep\StockInputsGeneratorFactory.cs" />
     <Compile Include="Helpers\ExportHelper.cs" />
     <Compile Include="Helpers\HelperNetwork.cs" />
     <Compile Include="Helpers\ImportHelper.cs" />
@@ -57,7 +64,7 @@
     <Compile Include="NetworkModels\Synapse.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TestDataPrep.cs" />
+    <Compile Include="DataPrep\TestDataPrep.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
