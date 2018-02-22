@@ -18,4 +18,18 @@ namespace NeuralNetwork.Database
             return _result.OrderBy(e => e.Key).ToArray();
         }
     }
+
+    /// <summary>
+    ///   {(double) open, (double) close, (double) high, (double) low, vol, (double) fdc, (double) mom});
+    /// </summary>
+    public enum StockIndex
+    {
+        Open,
+        Close,
+        High,
+        Low,
+        Volume,
+        FiveDay,
+        Momentum
+    }
 }

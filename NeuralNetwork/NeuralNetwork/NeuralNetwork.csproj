@@ -53,6 +53,7 @@
     <Compile Include="DataPrep\IInputGenerator.cs" />
     <Compile Include="DataPrep\IInputsGeneratorFactory.cs" />
     <Compile Include="DataPrep\ITargetGenerator.cs" />
+    <Compile Include="DataPrep\MovingAverage.cs" />
     <Compile Include="DataPrep\StockInputsGeneratorFactory.cs" />
     <Compile Include="Helpers\ExportHelper.cs" />
     <Compile Include="Helpers\HelperNetwork.cs" />
