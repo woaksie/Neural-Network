@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ApprovalTests;
+using ApprovalTests.Reporters;
 using FakeItEasy;
 using NeuralNetwork.Database;
 using NeuralNetwork.DataPrep;
@@ -12,6 +14,7 @@ using NUnit.Framework;
 namespace Tests
 {
     [TestFixture]
+    [UseReporter(typeof(DiffReporter))]
     public class TopLevelTests
     {
         [Test]
@@ -148,6 +151,8 @@ namespace Tests
             Assert.AreEqual(5, trainingData.Count);
 
             IList<DataSet> unTargeted = sut.UnTargeted;
+
+            Approvals.Verify(unTargeted);
 
             Assert.NotNull(unTargeted);
 

@@ -27,7 +27,7 @@ namespace NeuralNetwork.DataPrep
                 case InputsType.Basic:
                     return GetBasicList(pureData);
                 case InputsType.Full:
-                    return Enumerable.Empty<IInputGenerator>();
+                    return GetFullList(pureData);
                 default:
                     throw new ArgumentException($"{_type} is not supported");
             }
@@ -36,6 +36,16 @@ namespace NeuralNetwork.DataPrep
         private IEnumerable<IInputGenerator> GetBasicList(PureData pureData)
         {
             yield return new MovingAverage(_periods, pureData, StockIndex.Close);
+        }
+
+        private IEnumerable<IInputGenerator> GetFullList(PureData pureData)
+        {
+            yield return new MovingAverage(5, pureData, StockIndex.Close);
+            yield return new MovingAverage(10, pureData, StockIndex.Close);
+            yield return new MovingAverage(20, pureData, StockIndex.Close);
+            yield return new MovingAverage(40, pureData, StockIndex.Close);
+            yield return new MovingAverage(80, pureData, StockIndex.Close);
+            yield return new MovingAverage(160, pureData, StockIndex.Close);
         }
     }
 }

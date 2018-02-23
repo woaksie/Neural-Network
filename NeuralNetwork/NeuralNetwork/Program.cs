@@ -75,7 +75,7 @@ namespace NeuralNetwork
 	        var ds = _sqlDatabase.ReadData("QTEC").GetData();
 
 	        var prepper = new DataPrepper(new PureData(ds),
-	            new StockInputsGeneratorFactory(InputsType.Basic, 20),
+	            new StockInputsGeneratorFactory(InputsType.Full),
 	            new StockTargetsGeneratorFactory(TargetType.Profit, 126));
 
 	        _dataSets = prepper.GetTrainingInputData();
