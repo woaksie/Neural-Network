@@ -20,4 +20,45 @@ static internal class HelperFunctions
         });
         return pureData;
     }
+
+    public static PureData GenerateBigPureData()
+    {
+        var dataElements = new List<DataElement>();
+        var startDate = new DateTime(2010,1,1).Date;
+
+        rdm = new Random(5);
+
+        for (int i = 0; i < 1000; i++)
+        {
+            dataElements.Add(new DataElement(startDate.AddDays(i).Date, GetInputValues(i)));
+        }
+
+        PureData pureData = new PureData(dataElements);
+        return pureData;
+    }
+
+    private static Random rdm;
+
+    private static double[] GetInputValues(int i)
+    {
+        var baseValue = GetBaseValue(i);
+
+        var high = baseValue + rdm.NextDouble();
+        var low = baseValue - rdm.NextDouble();
+        var close = low + ((high - low) * rdm.NextDouble());
+        var open = low + ((high - low) * rdm.NextDouble());
+
+        return new[] { Truncate(open), Truncate(close), Truncate(high), Truncate(low)};
+    }
+
+    private static double Truncate(double i)
+    {
+        return Math.Truncate(i * 100D) / 100D;
+    }
+
+    private static double GetBaseValue(int i)
+    {
+        var v = i % 200;
+        return (Math.Pow(v, 2) + (-200 * v) + 11111) / 100;
+    }
 }

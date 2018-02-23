@@ -1,2 +1,2 @@
-﻿DataSet[0] =  and 0.964285714285715
-DataSet[1] =  and 0.965517241379311
+﻿DataSet[0] =  targets  inputs 0.964285714285715
+DataSet[1] =  targets  inputs 0.965517241379311

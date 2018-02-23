@@ -149,13 +149,36 @@ namespace Tests
 
             IList<DataSet> unTargeted = sut.UnTargeted;
 
-            Approvals.VerifyAll(unTargeted, "DataSet", a => string.Join(",", a.Targets) + " and " + string.Join(", ", a.SourceData));
+            Approvals.VerifyAll(unTargeted, "DataSet", a =>
+                $" targets {string.Join(", ", a.Targets)} inputs {string.Join(", ", a.SourceData)}");
         }
 
         [Test]
         public void TestPureData()
         {
-            Approvals.VerifyAll(HelperFunctions.GeneratePureData().GetData(), "Element", e => e.Key.Date + " values " + string.Join(", ", e.Values));
+            Approvals.VerifyAll(HelperFunctions.GeneratePureData().GetData(),
+                "Element",
+                e => $" {e.Key.Date} values {string.Join(", ", e.Values)}");
+        }
+
+        [Test]
+        public void TestBigPureData()
+        {
+            Approvals.VerifyAll(HelperFunctions.GenerateBigPureData().GetData(),
+                "Element",
+                e => $" {e.Key.Date} values {string.Join(", ", e.Values)}");
+        }
+
+        [Test]
+        public void GenerateBigTestData()
+        {
+            var sut = new DataPrepper(HelperFunctions.GenerateBigPureData(),
+                new StockInputsGeneratorFactory(InputsType.Full),
+                new StockTargetsGeneratorFactory(TargetType.Profit, 50));
+
+            IList<DataSet> trainingData = sut.GetTrainingInputData();
+
+            Approvals.VerifyAll(trainingData, "DataSet", a => string.Join(",", a.Targets) + " and " + string.Join(", ", a.SourceData));
         }
     }
 }

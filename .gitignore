@@ -196,3 +196,4 @@ FakesAssemblies/
 *.opt
 
 *.approved.txt.orig
+*.received.txt
