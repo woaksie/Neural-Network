@@ -72,10 +72,15 @@ namespace NeuralNetwork
 
 	    private static DataSet ExtractStockNetwork()
 	    {
-	        _dataSets = null;
 	        var ds = _sqlDatabase.ReadData("QTEC").GetData();
-            var ss = new TestDataPrep(ds);
-	        return ss.SetupTargetValues().Last();
+
+	        var prepper = new DataPrepper(new PureData(ds),
+	            new StockInputsGeneratorFactory(InputsType.Basic, 20),
+	            new StockTargetsGeneratorFactory(TargetType.Profit, 126));
+
+	        _dataSets = prepper.GetTrainingInputData();
+
+	        return prepper.UnTargeted.Last();
 	    }
 
 	    private static void DatasetMenu()

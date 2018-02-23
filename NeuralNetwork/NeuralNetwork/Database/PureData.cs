@@ -6,9 +6,9 @@ namespace NeuralNetwork.Database
 {
     public class PureData
     {
-        private readonly List<DataElement> _result;
+        private readonly IList<DataElement> _result;
 
-        public PureData(List<DataElement> result)
+        public PureData(IList<DataElement> result)
         {
             _result = result;
         }

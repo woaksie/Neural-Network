@@ -13,10 +13,12 @@ namespace NeuralNetwork.DataPrep
     public class StockInputsGeneratorFactory : IInputsGeneratorFactory
     {
         private readonly InputsType _type;
+        private readonly int _periods;
 
-        public StockInputsGeneratorFactory(InputsType type)
+        public StockInputsGeneratorFactory(InputsType type, int periods = 20)
         {
             _type = type;
+            _periods = periods;
         }
         public IEnumerable<IInputGenerator> GetInputGenerators(PureData pureData)
         {
@@ -33,7 +35,7 @@ namespace NeuralNetwork.DataPrep
 
         private IEnumerable<IInputGenerator> GetBasicList(PureData pureData)
         {
-            yield return new MovingAverage(30, pureData);
+            yield return new MovingAverage(_periods, pureData, StockIndex.Close);
         }
     }
 }
