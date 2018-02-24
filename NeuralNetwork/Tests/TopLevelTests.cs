@@ -4,12 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ApprovalTests;
+using ApprovalTests.Combinations;
 using ApprovalTests.Reporters;
 using FakeItEasy;
 using NeuralNetwork.Database;
 using NeuralNetwork.DataPrep;
 using NeuralNetwork.NetworkModels;
 using NUnit.Framework;
+
+// this is clever, use it.
+//             CombinationApprovals.VerifyAllCombinations(string.Join, new[] { ",", "-" }, new[] { new[] { "John", "Woakes" } });
+
+
 
 namespace Tests
 {
@@ -20,6 +26,8 @@ namespace Tests
         [Test]
         public void InitalCall()
         {
+
+
             PureData pureData = new PureData(new List<DataElement>());
             IInputsGeneratorFactory inputsFactory = A.Fake<IInputsGeneratorFactory>();
             ITargetsGeneratorFactory targetsFactory = A.Fake<ITargetsGeneratorFactory>();
@@ -45,6 +53,7 @@ namespace Tests
             var generatorList = sut.GetInputGenerators(pureData);
 
             Assert.NotNull(generatorList);
+
         }
 
         [Test]

@@ -120,8 +120,9 @@ namespace NeuralNetwork.DataPrep
             {
                 var mx = data.Max(d => d.Targets[i]);
                 var mn = data.Min(d => d.Targets[i]);
-                if (mn < 0)
-                    mn = 0;
+
+                if (mn <= 1)
+                    mn = 1;
                 var step = (mx - mn) / 3;
 
                 for (int j = 0; j < data.Count; j++)
