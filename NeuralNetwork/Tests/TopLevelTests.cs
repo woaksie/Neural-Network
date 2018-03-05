@@ -129,8 +129,8 @@ namespace Tests
 
             Assert.NotNull(inputData);
             Assert.AreEqual(2, inputData.Length);
-            Assert.IsTrue(Math.Abs(3.3D - inputData[0].Values[0]) < 0.00000001, $"{inputData[0].Values[0]}");
-            Assert.IsTrue(Math.Abs(3.4D - inputData[1].Values[0]) < 0.00000001, $"{inputData[1].Values[0]}");
+            Assert.IsTrue(Math.Abs(0.083333333333D - inputData[0].Values[0]) < 0.0001, $"{inputData[0].Values[0]}");
+            Assert.IsTrue(Math.Abs(0.076923D - inputData[1].Values[0]) < 0.001, $"{inputData[1].Values[0]}");
             Assert.AreEqual(pureData.GetData()[0].Key, inputData[0].Key);
             Assert.AreEqual(pureData.GetData()[1].Key, inputData[1].Key);
         }

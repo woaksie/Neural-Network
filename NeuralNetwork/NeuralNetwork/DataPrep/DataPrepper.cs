@@ -79,7 +79,7 @@ namespace NeuralNetwork.DataPrep
                 IList<double> targets = new List<double>();
                 foreach (var target in _targets)
                 foreach (var d in target.First(i => i.Key.Date == first).Values)
-                    targets.Add(d/close);
+                    targets.Add(d);
 
                 targeted.Add(new DataSet(inputs.ToArray(), targets.ToArray()));
 
@@ -121,8 +121,8 @@ namespace NeuralNetwork.DataPrep
                 var mx = data.Max(d => d.Targets[i]);
                 var mn = data.Min(d => d.Targets[i]);
 
-                if (mn <= 1)
-                    mn = 1;
+                if (mn <= 0.01D)
+                    mn = 0.01D;
                 var step = (mx - mn) / 3;
 
                 for (int j = 0; j < data.Count; j++)
@@ -137,11 +137,13 @@ namespace NeuralNetwork.DataPrep
                         results[j].Add(1);
                         results[j].Add(0);
                         results[j].Add(0);
+                        results[j].Add(0);
                     }
                     else if (d > (mx - (2*step)))
                     {
                         results[j].Add(0);
                         results[j].Add(1);
+                        results[j].Add(0);
                         results[j].Add(0);
                     }
                     else if (d >= mn)
@@ -149,12 +151,14 @@ namespace NeuralNetwork.DataPrep
                         results[j].Add(0);
                         results[j].Add(0);
                         results[j].Add(1);
+                        results[j].Add(0);
                     }
                     else
                     {
                         results[j].Add(0);
                         results[j].Add(0);
                         results[j].Add(0);
+                        results[j].Add(1);
                     }
                 }
             }
