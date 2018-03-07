@@ -9,19 +9,16 @@ namespace NeuralNetwork.Database
 
         public DataElement(DateTime key, double[] values)
         {
-            this.Key = key;
-            this._values = values;
+            Key = key;
+            _values = values;
         }
 
-        public double[] Values
-        {
-            get { return _values; }
-        }
+        public double[] Values => _values;
 
         public DateTime Key
         {
             get { return _key; }
-            set { _key = value; }
+            set { _key = value.Date; }
         }
     }
 }

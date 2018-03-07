@@ -15,7 +15,7 @@ namespace NeuralNetwork.Database
         {
             get
             {
-                var lines = File.ReadAllLines(@"..\..\..\..\..\SQL.txt");
+                var lines = File.ReadAllLines(@"D:\Projects\SQL.txt");
                 return new SQLDatabase(lines[0]);
             }
         }
