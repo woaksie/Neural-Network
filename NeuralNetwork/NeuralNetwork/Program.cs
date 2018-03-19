@@ -184,7 +184,7 @@ namespace NeuralNetwork
 			    return false;
 
 			Console.WriteLine("\tCreating Network...");
-			_network = new Network(_numInputParameters, _hiddenNeurons, _numOutputParameters);
+			_network = new Network(_numInputParameters, _hiddenNeurons, _numOutputParameters, 0.01D, 0.01D);
 
 		    Console.WriteLine("\t**Network Created!**");
 			PrintNewLine();

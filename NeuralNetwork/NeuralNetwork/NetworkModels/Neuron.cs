@@ -42,15 +42,16 @@ namespace NeuralNetwork.NetworkModels
 			return target - Value;
 		}
 
-		public double CalculateGradient(double? target = null)
-		{
-			if (target == null)
-				return Gradient = OutputSynapses.Sum(a => a.OutputNeuron.Gradient * a.Weight) * Sigmoid.Derivative(Value);
+	    public double CalculateGradient(double? target = null)
+	    {
+	        var derivative = Sigmoid.Derivative(Value);
+	        if (target == null)
+	            return Gradient = OutputSynapses.Sum(a => a.OutputNeuron.Gradient * a.Weight) * derivative;
+	        else
+	            return Gradient = CalculateError(target.Value) * derivative;
+	    }
 
-			return Gradient = CalculateError(target.Value) * Sigmoid.Derivative(Value);
-		}
-
-		public void UpdateWeights(double learnRate, double momentum)
+	    public void UpdateWeights(double learnRate, double momentum)
 		{
 			var prevDelta = BiasDelta;
 			BiasDelta = learnRate * Gradient;

@@ -26,8 +26,6 @@ namespace Tests
         [Test]
         public void InitalCall()
         {
-
-
             PureData pureData = new PureData(new List<DataElement>());
             IInputsGeneratorFactory inputsFactory = A.Fake<IInputsGeneratorFactory>();
             ITargetsGeneratorFactory targetsFactory = A.Fake<ITargetsGeneratorFactory>();

@@ -74,7 +74,8 @@ namespace NeuralNetwork.NetworkModels
 			var numEpochs = 0;
 
 		    var sw = Stopwatch.StartNew();
-			while (error > minimumError && numEpochs < 100000000)
+
+			while (error > minimumError && numEpochs < 100000000) // 100 million
 			{
 				var errors = new List<double>();
 				foreach (var dataSet in dataSets)
@@ -83,9 +84,17 @@ namespace NeuralNetwork.NetworkModels
 					BackPropagate(dataSet.Targets);
 					errors.Add(CalculateError(dataSet.Targets));
 				}
-				error = errors.Average();
-				numEpochs++;
+
+			    var temp = errors.Average();
+			    Console.WriteLine(temp <= error ? "better" : "worse");
+			    error = temp;
+
+			    numEpochs++;
+
+                if (sw.Elapsed.TotalMinutes > 5)
+                    return;
 			}
+
 		    var time = sw.Elapsed;
 		    Console.WriteLine($"Took {time.TotalMinutes} minutes");
 		}

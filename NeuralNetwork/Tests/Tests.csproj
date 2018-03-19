@@ -55,6 +55,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="NetworkTests.cs" />
     <Compile Include="FindBestBuySell.cs" />
     <Compile Include="HelperFunctions.cs" />
     <Compile Include="TopLevelTests.cs" />
