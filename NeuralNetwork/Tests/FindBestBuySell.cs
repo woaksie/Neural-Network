@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using FakeItEasy;
+using ApprovalTests;
+using ApprovalTests.Reporters;
 using NeuralNetwork.Database;
-using NeuralNetwork.DataPrep;
 using NUnit.Framework;
-using NUnit.Framework.Internal;
 
 namespace Tests
 {
     [TestFixture]
+    [UseReporter(typeof(DiffReporter))]
     public class FindBestBuySell
     {
         [Test]
@@ -21,7 +21,11 @@ namespace Tests
 
             var sut = new ProfitTester(ds);
 
-            double sellParamert = sut.BestSell();
+            IList<Result> results = sut.BestSell();
+
+            var result = results.OrderByDescending(r => r.Cash).First();
+
+            Approvals.Verify(result.Audit);
         }
     }
 
@@ -29,50 +33,65 @@ namespace Tests
     {
         private readonly IList<DataElement> _elements;
         private readonly int _lookAheadBars = (int) Math.Round(252D / 2D);
+        private readonly List<Result> _results;
+        private StringBuilder _audit;
 
 
         public ProfitTester(IList<DataElement> elements)
         {
             _elements = elements;
+            _results = new List<Result>();
         }
 
         /// <summary>
         /// Looking for the optimal parameters for buy and sell
         /// </summary>
+        /// <param name="audit"></param>
         /// <returns></returns>
-        public double BestSell()
+        public IList<Result> BestSell()
         {
-            double cutLossPercent = 0.01D;
-            double sellPercent = 0.001D;
-            double buyPercent = 0.001D;
+            _audit = new StringBuilder();
 
-            while (cutLossPercent < 0.08D)
+            double cutLossPercent = 0.001D;
+            while (cutLossPercent < 0.1D)
             {
-                while (sellPercent < 0.08D)
+                double sellPercent = 0.0001D;
+                while (sellPercent < 0.1D)
                 {
-                    while (buyPercent < 0.08D)
+                    double buyPercent = 0.0001D;
+                    while (buyPercent < 0.1D)
                     {
-                        Results x = CalculateProfit(cutLossPercent, sellPercent, buyPercent);
-                        StoreResults(x);
+                        double notWorthItProfit = 0.0005D;
+                        while (notWorthItProfit < 0.1D)
+                        {
+                            var result = CalculateProfit(cutLossPercent, sellPercent, buyPercent, notWorthItProfit);
+                            StoreResults(result);
 
-                        buyPercent += 0.001D;
+                            notWorthItProfit += 0.01D;
+                        }
+                        buyPercent += 0.01D;
                     }
-                    sellPercent += 0.001D;
+                    sellPercent += 0.01D;
                 }
-                cutLossPercent += 0.001;
+                cutLossPercent += 0.01D;
             }
 
-
-
+            return _results;
         }
 
         // todo: logic is not done - check each variable and each conditional
-        private Results CalculateProfit(double cutLossPercent, double sellPercent, double buyPercent)
+        private Result CalculateProfit(double cutLossPercent, double sellPercent, double buyPercent, double notWorthItProfit)
         {
-            var shares = 1D;
+            _audit.Clear();
+            _audit.AppendLine($"{cutLossPercent},{sellPercent},{buyPercent},{notWorthItProfit}");
+            var cash = 2000D;
+            var shares = 0D;
+            var comm = 4.99D;
+
             var txn = 0;
-            var cash = 0D;
             var holdShares = true;
+            var daysIn = 0;
+            var daysOut = 0;
 
             var day1 = _elements[0].Values;
 
@@ -84,8 +103,13 @@ namespace Tests
             var min = low;
 
             var floor = open * (1D - cutLossPercent);
-            var sell = open * (1D - sellPercent);
+            var scrapy = open * (1D + notWorthItProfit);
+            var sell = open * (-1D);                      // until past scrapy
             var buy = open * (1D + buyPercent);
+
+            var temp = BuyShares(cash, open);
+            shares = temp.Shares;
+            cash = temp.Change;
 
             foreach (var ele in _elements)
             {
@@ -93,46 +117,81 @@ namespace Tests
                 high = ele.Values[(int) StockIndex.High];
                 low = ele.Values[(int)StockIndex.Low];
 
+                _audit.AppendLine($"{ele.Key.ToShortDateString()},{open},{high},{low},{holdShares},{cash},{shares},{max},{min},{floor},{scrapy},{sell},{buy}");
+
+                if (holdShares)
+                    daysIn++;
+                else
+                    daysOut++;
+
                 if (holdShares)        // looking for sell signal
                     if (low < floor)   // cap loss
                     {
+                        if (open > floor) // got a crack at floor value
+                            cash = RoundDown((floor * shares) - comm) + cash;
+                        else               // take open price 
+                            cash = RoundDown((open * shares) - comm) + cash;
+
                         holdShares = false;
                         shares = 0;
                         txn += 1;
-                        
-                        if (open > floor)  // got a crack at floor value
-                            cash = floor * shares;
-                        else               // take open price 
-                            cash = open * shares;
+                        buy = low * (1D + buyPercent);
+                        min = low;
                     }
                     else  // check sell level
                     {
                         if (low < sell)   // time to sell
                         {
+                            if (open > sell)   // got sell price
+                                cash = RoundDown((sell * shares) - comm) + cash;
+                            else               // have to make do with open price
+                                cash = RoundDown((open * shares) - comm) + cash;
+
                             holdShares = false;
                             shares = 0;
                             txn += 1;
-
-                            if (open > sell)   // got sell price
-                                cash = sell * shares;
-                            else               // have to make do with open price
-                                cash = open * shares;
+                            buy = low * (1D + buyPercent);
+                            min = low;
                         }
                         else  // still looking good to hold
                         {
-                            if (high > max)
-                                sell = high * (1D - sellPercent);
+                            if (high > scrapy)
+                            {
+                                if (high >= max)
+                                {
+                                    sell = high * (1D - sellPercent);
+                                    max = high;
+                                }
+                            }
                         }
                     }
                 else      // looking for buy signal
                 {
                     if (high > buy)  // time to buy
                     {
-                        holdShares = true;
                         if (open > buy)   // have to go with open price
-                            shares = open * cash;
+                        {
+                            temp = BuyShares(cash, open);
+                            shares = temp.Shares;
+                            cash = temp.Change;
+
+                            scrapy = open * (1D + notWorthItProfit);
+                            floor = open * (1D - cutLossPercent);
+                            max = open;
+                        }
                         else              // can buy at buy price
-                            shares = buy * cash;
+                        {
+                            temp = BuyShares(cash, buy);
+                            shares = temp.Shares;
+                            cash = temp.Change;
+
+                            scrapy = buy * (1D + notWorthItProfit);
+                            floor = buy * (1D - cutLossPercent);
+                            max = buy;
+                        }
+
+                        holdShares = true;
+                        sell = -1D;
                     }
                     else   // stay out of the market
                     {
@@ -149,17 +208,78 @@ namespace Tests
                 }
             }
 
+            if (holdShares)
+            {
+                cash = (open * shares) + cash;
+                txn += 1;
+            }
 
-
+            return new Result(cash, txn, cutLossPercent, sellPercent, buyPercent, notWorthItProfit, daysIn, daysOut, _audit);
         }
 
-        private void StoreResults(Results results)
+        private Sale BuyShares(double cash, double price)
         {
-            throw new NotImplementedException();
+            double temp = cash / price;
+            var shares = (int) Math.Truncate(temp);
+            var change = cash - (shares * price);
+            return new Sale(shares, change);
+        }
+
+        private double RoundDown(double val)
+        {
+            double temp = val * 100D;
+            temp = Math.Truncate(temp);
+            return temp / 100D;
+        }
+
+        private void StoreResults(Result result)
+        {
+            _results.Add(result);
         }
     }
 
-    public class Results
+    internal class Sale
     {
+        public int Shares { get; }
+        public double Change { get; }
+
+        public Sale(int shares, double change)
+        {
+            this.Shares = shares;
+            this.Change = change;
+        }
+    }
+
+    public class Result
+    {
+        private int txn;
+        private double cutLossPercent;
+        private double sellPercent;
+        private double buyPercent;
+        private double notWorthItProfit;
+        private readonly int _daysIn;
+        private readonly int _daysOut;
+        private string _audit;
+
+        private Result(double cash, int txn)
+        {
+            Cash = cash;
+            this.txn = txn;
+        }
+
+        public Result(double cash, int txn, double cutLossPercent, double sellPercent, double buyPercent,
+            double notWorthItProfit, int daysIn, int daysOut, StringBuilder audit) : this(cash, txn)
+        {
+            _audit = audit.ToString();
+            this.cutLossPercent = cutLossPercent;
+            this.sellPercent = sellPercent;
+            this.buyPercent = buyPercent;
+            this.notWorthItProfit = notWorthItProfit;
+            _daysIn = daysIn;
+            _daysOut = daysOut;
+        }
+
+        public double Cash { get; }
+        public string Audit => _audit;
     }
 }
