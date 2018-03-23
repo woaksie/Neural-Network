@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ApprovalTests;
-using ApprovalTests.Combinations;
 using ApprovalTests.Reporters;
 using FakeItEasy;
 using NeuralNetwork.Database;

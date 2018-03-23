@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data.SqlTypes;
 using System.Linq;
 using System.Text;
 using ApprovalTests;
-using ApprovalTests.Core;
 using ApprovalTests.Reporters;
 using NeuralNetwork.Database;
 using NUnit.Framework;
