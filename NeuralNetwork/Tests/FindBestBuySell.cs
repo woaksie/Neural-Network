@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data.SqlTypes;
 using System.Linq;
 using System.Text;
 using ApprovalTests;
+using ApprovalTests.Core;
 using ApprovalTests.Reporters;
 using NeuralNetwork.Database;
 using NUnit.Framework;
@@ -23,9 +25,34 @@ namespace Tests
 
             IList<Result> results = sut.BestSell();
 
-            var result = results.OrderByDescending(r => r.Cash).First();
+            var result = results.OrderByDescending(r => r.Cash).ToArray();
 
-            Approvals.Verify(result.Audit);
+            Approvals.Verify(result.First().Audit);
+        }
+
+        [Test]
+        public void Top50ResultsAndParameters()
+        {
+            var ds = SQLDatabase.Instance.ReadData("QTEC").GetData();
+
+            var sut = new ProfitTester(ds);
+
+            IList<Result> results = sut.BestSell();
+
+            var result = results.OrderByDescending(r => r.Cash).Take(50).ToArray();
+
+            Approvals.Verify(Expand(result));
+        }
+
+        private string Expand(Result[] result)
+        {
+            StringBuilder res = new StringBuilder();
+            res.AppendLine("Floor,Scrapy,Sell,Buy,Cash");
+
+            foreach (var val in result)
+                res.AppendLine($"{val.Floor},{val.Scrapy},{val.Sell},{val.Buy},{val.Cash}");
+
+            return res.ToString();
         }
     }
 
@@ -35,12 +62,14 @@ namespace Tests
         private readonly int _lookAheadBars = (int) Math.Round(252D / 2D);
         private readonly List<Result> _results;
         private StringBuilder _audit;
+        private readonly double _startCash;
 
 
         public ProfitTester(IList<DataElement> elements)
         {
             _elements = elements;
             _results = new List<Result>();
+            _startCash = 2000D;
         }
 
         /// <summary>
@@ -52,28 +81,28 @@ namespace Tests
         {
             _audit = new StringBuilder();
 
-            double cutLossPercent = 0.001D;
-            while (cutLossPercent < 0.1D)
+            double cutLossPercent = 0.0005D;
+            while (cutLossPercent < 0.15D)
             {
-                double sellPercent = 0.0001D;
+                double sellPercent = 0.0005D;
                 while (sellPercent < 0.1D)
                 {
-                    double buyPercent = 0.0001D;
+                    double buyPercent = 0.0005D;
                     while (buyPercent < 0.1D)
                     {
                         double notWorthItProfit = 0.0005D;
-                        while (notWorthItProfit < 0.1D)
+                        while (notWorthItProfit < 0.15D)
                         {
                             var result = CalculateProfit(cutLossPercent, sellPercent, buyPercent, notWorthItProfit);
                             StoreResults(result);
 
-                            notWorthItProfit += 0.01D;
+                            notWorthItProfit += 0.005D;
                         }
-                        buyPercent += 0.01D;
+                        buyPercent += 0.005D;
                     }
-                    sellPercent += 0.01D;
+                    sellPercent += 0.005D;
                 }
-                cutLossPercent += 0.01D;
+                cutLossPercent += 0.005D;
             }
 
             return _results;
@@ -83,8 +112,10 @@ namespace Tests
         private Result CalculateProfit(double cutLossPercent, double sellPercent, double buyPercent, double notWorthItProfit)
         {
             _audit.Clear();
+            _audit.AppendLine("cutLossPercent,sellPercent,buyPercent,notWorthItProfit");
             _audit.AppendLine($"{cutLossPercent},{sellPercent},{buyPercent},{notWorthItProfit}");
-            var cash = 2000D;
+
+            var cash = _startCash;
             var shares = 0D;
             var comm = 4.99D;
 
@@ -110,6 +141,8 @@ namespace Tests
             var temp = BuyShares(cash, open);
             shares = temp.Shares;
             cash = temp.Change;
+
+            _audit.AppendLine("Date,open,high,low,holdShares,cash,shares,max,min,floor,scrapy,sell,buy");
 
             foreach (var ele in _elements)
             {
@@ -210,11 +243,20 @@ namespace Tests
 
             if (holdShares)
             {
-                cash = (open * shares) + cash;
+                cash = RoundDown((open * shares) - comm) + cash;
                 txn += 1;
             }
 
+            _audit.AppendLine($"Percent return per month {DoAnnualPercentage(_startCash, cash, _elements[0].Key, _elements.Last().Key)}%");
+
             return new Result(cash, txn, cutLossPercent, sellPercent, buyPercent, notWorthItProfit, daysIn, daysOut, _audit);
+        }
+
+        private double DoAnnualPercentage(double startCash, double cash, DateTime start, DateTime end)
+        {
+            double period = end.Date.Subtract(start.Date).TotalDays;
+            double ratio = cash / startCash;
+            return (Math.Pow(ratio, (365.25 / period)) - 1) * 100;
         }
 
         private Sale BuyShares(double cash, double price)
@@ -281,5 +323,9 @@ namespace Tests
 
         public double Cash { get; }
         public string Audit => _audit;
+        public double Floor => cutLossPercent;
+        public double Scrapy => notWorthItProfit;
+        public double Sell => sellPercent;
+        public double Buy => buyPercent;
     }
 }
