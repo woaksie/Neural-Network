@@ -47,7 +47,12 @@ namespace Tests
             res.AppendLine("Floor,Scrapy,Sell,Buy,Cash");
 
             foreach (var val in result)
-                res.AppendLine($"{val.Floor},{val.Scrapy},{val.Sell},{val.Buy},{val.Cash}");
+            {
+                var line = $"{val.Floor},{val.Scrapy},{val.Sell},{val.Buy},{val.Cash}";
+                if (line.Contains("0.0505,0.0255,0.0155,0.0005"))
+                    line = $"{line} ****";
+                res.AppendLine(line);
+            }
 
             return res.ToString();
         }
