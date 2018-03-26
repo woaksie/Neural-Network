@@ -59,14 +59,14 @@ namespace Tests
         private readonly int _lookAheadBars = (int) Math.Round(252D / 2D);
         private readonly List<Result> _results;
         private StringBuilder _audit;
-        private readonly double _startCash;
+        private readonly decimal _startCash;
 
 
         public ProfitTester(IList<DataElement> elements)
         {
             _elements = elements;
             _results = new List<Result>();
-            _startCash = 2000D;
+            _startCash = 2000m;
         }
 
         /// <summary>
@@ -78,43 +78,43 @@ namespace Tests
         {
             _audit = new StringBuilder();
 
-            double cutLossPercent = 0.0005D;
-            while (cutLossPercent < 0.15D)
+            decimal cutLossPercent = 0.0005m;
+            while (cutLossPercent < 0.15m)
             {
-                double sellPercent = 0.0005D;
-                while (sellPercent < 0.1D)
+                decimal sellPercent = 0.0005m;
+                while (sellPercent < 0.1m)
                 {
-                    double buyPercent = 0.0005D;
-                    while (buyPercent < 0.1D)
+                    decimal buyPercent = 0.0005m;
+                    while (buyPercent < 0.1m)
                     {
-                        double notWorthItProfit = 0.0005D;
-                        while (notWorthItProfit < 0.15D)
+                        decimal notWorthItProfit = 0.0005m;
+                        while (notWorthItProfit < 0.15m)
                         {
                             var result = CalculateProfit(cutLossPercent, sellPercent, buyPercent, notWorthItProfit);
                             StoreResults(result);
 
-                            notWorthItProfit += 0.005D;
+                            notWorthItProfit += 0.005m;
                         }
-                        buyPercent += 0.005D;
+                        buyPercent += 0.005m;
                     }
-                    sellPercent += 0.005D;
+                    sellPercent += 0.005m;
                 }
-                cutLossPercent += 0.005D;
+                cutLossPercent += 0.005m;
             }
 
             return _results;
         }
 
         // todo: logic is not done - check each variable and each conditional
-        private Result CalculateProfit(double cutLossPercent, double sellPercent, double buyPercent, double notWorthItProfit)
+        private Result CalculateProfit(decimal cutLossPercent, decimal sellPercent, decimal buyPercent, decimal notWorthItProfit)
         {
             _audit.Clear();
             _audit.AppendLine("cutLossPercent,sellPercent,buyPercent,notWorthItProfit");
             _audit.AppendLine($"{cutLossPercent},{sellPercent},{buyPercent},{notWorthItProfit}");
 
             var cash = _startCash;
-            var shares = 0D;
-            var comm = 4.99D;
+            var shares = 0;
+            decimal comm = 4.99m;
 
             var txn = 0;
             var holdShares = true;
@@ -123,17 +123,17 @@ namespace Tests
 
             var day1 = _elements[0].Values;
 
-            var open = day1[(int) StockIndex.Open];
-            var high = day1[(int) StockIndex.High];
-            var low = day1[(int) StockIndex.Low];
+            decimal open = (decimal) day1[(int) StockIndex.Open];
+            decimal high = (decimal) day1[(int) StockIndex.High];
+            decimal low = (decimal) day1[(int) StockIndex.Low];
 
             var max = high;
             var min = low;
 
-            var floor = open * (1D - cutLossPercent);
-            var scrapy = open * (1D + notWorthItProfit);
-            var sell = open * (-1D);                      // until past scrapy
-            var buy = open * (1D + buyPercent);
+            var floor = open * (1m - cutLossPercent);
+            var scrapy = open * (1m + notWorthItProfit);
+            var sell = open * (-1m);                      // until past scrapy
+            var buy = open * (1m + buyPercent);
 
             var temp = BuyShares(cash, open);
             shares = temp.Shares;
@@ -143,9 +143,9 @@ namespace Tests
 
             foreach (var ele in _elements)
             {
-                open = ele.Values[(int)StockIndex.Open];
-                high = ele.Values[(int) StockIndex.High];
-                low = ele.Values[(int)StockIndex.Low];
+                open = (decimal) ele.Values[(int)StockIndex.Open];
+                high = (decimal) ele.Values[(int) StockIndex.High];
+                low = (decimal) ele.Values[(int)StockIndex.Low];
 
                 _audit.AppendLine($"{ele.Key.ToShortDateString()},{open},{high},{low},{holdShares},{cash},{shares},{max},{min},{floor},{scrapy},{sell},{buy}");
 
@@ -158,29 +158,29 @@ namespace Tests
                     if (low < floor)   // cap loss
                     {
                         if (open > floor) // got a crack at floor value
-                            cash = RoundDown((floor * shares) - comm) + cash;
-                        else               // take open price 
-                            cash = RoundDown((open * shares) - comm) + cash;
+                            cash = SellShares(floor, shares, comm, cash);
+                        else // take open price 
+                            cash = SellShares(open, shares, comm, cash);
 
                         holdShares = false;
                         shares = 0;
                         txn += 1;
-                        buy = low * (1D + buyPercent);
+                        buy = low * (1m + buyPercent);
                         min = low;
                     }
                     else  // check sell level
                     {
                         if (low < sell)   // time to sell
                         {
-                            if (open > sell)   // got sell price
-                                cash = RoundDown((sell * shares) - comm) + cash;
-                            else               // have to make do with open price
-                                cash = RoundDown((open * shares) - comm) + cash;
+                            if (open > sell) // got sell price
+                                cash = SellShares(sell, shares, comm, cash);
+                            else // have to make do with open price
+                                cash = SellShares(open, shares, comm, cash);
 
                             holdShares = false;
                             shares = 0;
                             txn += 1;
-                            buy = low * (1D + buyPercent);
+                            buy = low * (1m + buyPercent);
                             min = low;
                         }
                         else  // still looking good to hold
@@ -189,7 +189,7 @@ namespace Tests
                             {
                                 if (high >= max)
                                 {
-                                    sell = high * (1D - sellPercent);
+                                    sell = high * (1m - sellPercent);
                                     max = high;
                                 }
                             }
@@ -205,8 +205,8 @@ namespace Tests
                             shares = temp.Shares;
                             cash = temp.Change;
 
-                            scrapy = open * (1D + notWorthItProfit);
-                            floor = open * (1D - cutLossPercent);
+                            scrapy = open * (1m + notWorthItProfit);
+                            floor = open * (1m - cutLossPercent);
                             max = open;
                         }
                         else              // can buy at buy price
@@ -215,20 +215,20 @@ namespace Tests
                             shares = temp.Shares;
                             cash = temp.Change;
 
-                            scrapy = buy * (1D + notWorthItProfit);
-                            floor = buy * (1D - cutLossPercent);
+                            scrapy = buy * (1m + notWorthItProfit);
+                            floor = buy * (1m - cutLossPercent);
                             max = buy;
                         }
 
                         holdShares = true;
-                        sell = -1D;
+                        sell = -1m;
                     }
                     else   // stay out of the market
                     {
                         if (low < min) // new low so adjust buy price
                         {
                             min = low;
-                            buy = low * (1D + buyPercent);
+                            buy = low * (1m + buyPercent);
                         }
                         else  // bide your time
                         {
@@ -240,7 +240,7 @@ namespace Tests
 
             if (holdShares)
             {
-                cash = RoundDown((open * shares) - comm) + cash;
+                cash = SellShares(open, shares, comm, cash);
                 txn += 1;
             }
 
@@ -249,26 +249,33 @@ namespace Tests
             return new Result(cash, txn, cutLossPercent, sellPercent, buyPercent, notWorthItProfit, daysIn, daysOut, _audit);
         }
 
-        private double DoAnnualPercentage(double startCash, double cash, DateTime start, DateTime end)
+        private double DoAnnualPercentage(decimal startCash, decimal cash, DateTime start, DateTime end)
         {
             double period = end.Date.Subtract(start.Date).TotalDays;
-            double ratio = cash / startCash;
-            return (Math.Pow(ratio, (365.25 / period)) - 1) * 100;
+            double ratio = (double) (cash / startCash);
+            return (Math.Pow(ratio, (365.25D / period)) - 1D) * 100D;
         }
 
-        private Sale BuyShares(double cash, double price)
+        private Sale BuyShares(decimal cash, decimal price)
         {
-            double temp = cash / price;
-            var shares = (int) Math.Truncate(temp);
-            var change = cash - (shares * price);
+            var tPrice = price * 100m;
+            tPrice = Math.Ceiling(tPrice);
+            tPrice = tPrice / 100m;
+
+            var tShares = cash / tPrice;
+            var shares = (int) Math.Truncate(tShares);
+            var change = cash - (shares * tPrice);
+
             return new Sale(shares, change);
         }
 
-        private double RoundDown(double val)
+        private decimal SellShares(decimal price, int shares, decimal comm, decimal cash)
         {
-            double temp = val * 100D;
+            decimal temp = price * 100m;
             temp = Math.Truncate(temp);
-            return temp / 100D;
+            temp = temp / 100m;
+            temp = temp * shares;
+            return temp + cash - comm;
         }
 
         private void StoreResults(Result result)
@@ -280,34 +287,38 @@ namespace Tests
     internal class Sale
     {
         public int Shares { get; }
-        public double Change { get; }
+        public decimal Change { get; }
 
-        public Sale(int shares, double change)
+        public Sale(int shares, decimal change)
         {
-            this.Shares = shares;
-            this.Change = change;
+            Shares = shares;
+
+            var temp = change * 100m;
+            temp = Math.Round(temp);
+            temp = temp / 100m;
+            Change = temp;
         }
     }
 
     public class Result
     {
         private int txn;
-        private double cutLossPercent;
-        private double sellPercent;
-        private double buyPercent;
-        private double notWorthItProfit;
+        private decimal cutLossPercent;
+        private decimal sellPercent;
+        private decimal buyPercent;
+        private decimal notWorthItProfit;
         private readonly int _daysIn;
         private readonly int _daysOut;
         private string _audit;
 
-        private Result(double cash, int txn)
+        private Result(decimal cash, int txn)
         {
             Cash = cash;
             this.txn = txn;
         }
 
-        public Result(double cash, int txn, double cutLossPercent, double sellPercent, double buyPercent,
-            double notWorthItProfit, int daysIn, int daysOut, StringBuilder audit) : this(cash, txn)
+        public Result(decimal cash, int txn, decimal cutLossPercent, decimal sellPercent, decimal buyPercent,
+            decimal notWorthItProfit, int daysIn, int daysOut, StringBuilder audit) : this(cash, txn)
         {
             _audit = audit.ToString();
             this.cutLossPercent = cutLossPercent;
@@ -318,11 +329,11 @@ namespace Tests
             _daysOut = daysOut;
         }
 
-        public double Cash { get; }
+        public decimal Cash { get; }
         public string Audit => _audit;
-        public double Floor => cutLossPercent;
-        public double Scrapy => notWorthItProfit;
-        public double Sell => sellPercent;
-        public double Buy => buyPercent;
+        public decimal Floor => cutLossPercent;
+        public decimal Scrapy => notWorthItProfit;
+        public decimal Sell => sellPercent;
+        public decimal Buy => buyPercent;
     }
 }
