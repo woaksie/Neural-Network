@@ -48,7 +48,7 @@ namespace Tests
 
             foreach (var val in result)
             {
-                var line = $"{val.Floor},{val.Scrapy},{val.Sell},{val.Buy},{val.Cash}";
+                var line = $"{val.Floor},{val.Scrapy},{val.Sell},{val.Buy},{val.Cash},{val.Txn}";
                 if (line.Contains("0.0505,0.0255,0.0155,0.0005"))
                     line = $"{line} ****";
                 res.AppendLine(line);
@@ -340,5 +340,6 @@ namespace Tests
         public decimal Scrapy => notWorthItProfit;
         public decimal Sell => sellPercent;
         public decimal Buy => buyPercent;
+        public int Txn => txn;
     }
 }
