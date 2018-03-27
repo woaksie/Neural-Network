@@ -62,10 +62,11 @@ namespace Tests
 
         private string KNN(Result[] result)
         {
-            var mxFloor = result.Max(r => r.Floor);
-            var mxScrapy = result.Max(r => r.Scrapy);
-            var mxSell = result.Max(r => r.Sell);
-            var mxBuy = result.Max(r => r.Buy);
+            var mxFloor = result.Max(r => r.Floor) + 0.000001m;
+            var mxScrapy = result.Max(r => r.Scrapy) + 0.000001m;
+            var mxSell = result.Max(r => r.Sell) + 0.000001m;
+            var mxBuy = result.Max(r => r.Buy) + 0.000001m;
+
             var mnFloor = result.Min(r => r.Floor);
             var mnScrapy = result.Min(r => r.Scrapy);
             var mnSell = result.Min(r => r.Sell);
@@ -74,13 +75,13 @@ namespace Tests
             double minDistance = double.MaxValue;
             Result minDetails = null;
 
-            for (decimal flr = mnFloor; flr <= mxFloor; flr = flr + ((mxFloor-mnFloor)/4.999m))
+            for (decimal flr = mnFloor; flr <= mxFloor; flr = flr + ((mxFloor-mnFloor)/7.999m))
             {
-                for (decimal spy = mnScrapy; spy < mxScrapy; spy = spy + ((mxScrapy - mnScrapy) / 4.999m))
+                for (decimal spy = mnScrapy; spy < mxScrapy; spy = spy + ((mxScrapy - mnScrapy) / 7.999m))
                 {
-                    for (decimal sel = mnSell; sel < mxSell; sel = sel + ((mxSell - mnSell) / 4.999m))
+                    for (decimal sel = mnSell; sel < mxSell; sel = sel + ((mxSell - mnSell) / 7.999m))
                     {
-                        for (decimal buy = mnBuy; buy < mxBuy; buy = buy + ((mxBuy - mnBuy) / 4.999m))
+                        for (decimal buy = mnBuy; buy < mxBuy; buy = buy + ((mxBuy - mnBuy) / 7.999m))
                         {
                             double distance = 0;
                             foreach (var res in result)
@@ -102,8 +103,8 @@ namespace Tests
                 }
             }
 
-            return "Buy,Floor,Scrapy,Sell" + Environment.NewLine +
-                      $"{minDetails.Buy},{minDetails.Floor},{minDetails.Scrapy},{minDetails.Sell}";
+            return "Floor,Sell,Buy,Scrapy" + Environment.NewLine +
+                   $"{minDetails.Floor.ToString($"#.####")},{minDetails.Sell.ToString($"#.####")},{minDetails.Buy.ToString($"#.####")},{minDetails.Scrapy.ToString($"#.####")}";
         }
     }
 
