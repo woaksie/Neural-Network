@@ -44,7 +44,10 @@ namespace Tests
         private string Expand(Result[] result)
         {
             StringBuilder res = new StringBuilder();
-            res.AppendLine("Floor,Scrapy,Sell,Buy,Cash");
+
+            res.AppendLine(KNN(result));
+
+            res.AppendLine("Floor,Scrapy,Sell,Buy,Cash,Txns");
 
             foreach (var val in result)
             {
@@ -55,6 +58,52 @@ namespace Tests
             }
 
             return res.ToString();
+        }
+
+        private string KNN(Result[] result)
+        {
+            var mxFloor = result.Max(r => r.Floor);
+            var mxScrapy = result.Max(r => r.Scrapy);
+            var mxSell = result.Max(r => r.Sell);
+            var mxBuy = result.Max(r => r.Buy);
+            var mnFloor = result.Min(r => r.Floor);
+            var mnScrapy = result.Min(r => r.Scrapy);
+            var mnSell = result.Min(r => r.Sell);
+            var mnBuy = result.Min(r => r.Buy);
+
+            double minDistance = double.MaxValue;
+            Result minDetails = null;
+
+            for (decimal flr = mnFloor; flr <= mxFloor; flr = flr + ((mxFloor-mnFloor)/4.999m))
+            {
+                for (decimal spy = mnScrapy; spy < mxScrapy; spy = spy + ((mxScrapy - mnScrapy) / 4.999m))
+                {
+                    for (decimal sel = mnSell; sel < mxSell; sel = sel + ((mxSell - mnSell) / 4.999m))
+                    {
+                        for (decimal buy = mnBuy; buy < mxBuy; buy = buy + ((mxBuy - mnBuy) / 4.999m))
+                        {
+                            double distance = 0;
+                            foreach (var res in result)
+                            {
+                                var temp = Math.Pow((double) (flr - res.Floor), 2);
+                                temp += Math.Pow((double)(spy - res.Scrapy), 2);
+                                temp += Math.Pow((double)(sel - res.Sell), 2);
+                                temp += Math.Pow((double)(buy - res.Buy), 2);
+                                distance += Math.Sqrt(temp);
+                            }
+
+                            if (distance < minDistance)
+                            {
+                                minDistance = distance;
+                                minDetails = new Result(0, 0, flr, sel, buy, spy, 0, 0, new StringBuilder());
+                            }
+                        }
+                    }
+                }
+            }
+
+            return "Buy,Floor,Scrapy,Sell" + Environment.NewLine +
+                      $"{minDetails.Buy},{minDetails.Floor},{minDetails.Scrapy},{minDetails.Sell}";
         }
     }
 
