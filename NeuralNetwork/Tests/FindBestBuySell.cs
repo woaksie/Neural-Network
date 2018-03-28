@@ -52,7 +52,7 @@ namespace Tests
         {
             StringBuilder res = new StringBuilder();
 
-            res.AppendLine(KNN(result));
+            KNearest(result, res);
 
             res.AppendLine("Floor,Scrapy,Sell,Buy,Cash,Txns");
 
@@ -67,7 +67,40 @@ namespace Tests
             return res.ToString();
         }
 
-        private string KNN(Result[] result)
+        private void KNearest(Result[] result, StringBuilder res)
+        {
+            var lst = result.ToList();
+            var value = KNN(result);
+
+            for (int i = 0; i < 10; i++)
+            {
+                RemoveOutLier(lst, value);
+                value = KNN(lst.ToArray());
+            }
+
+            res.AppendLine("Floor,Sell,Buy,Scrapy" + Environment.NewLine +
+                           $"{value.Floor.ToString($"#.####")},{value.Sell.ToString($"#.####")},{value.Buy.ToString($"#.####")},{value.Scrapy.ToString($"#.####")}");
+        }
+
+        private void RemoveOutLier(List<Result> lst, Result value)
+        {
+            double maxDistance = 0D;
+            Result bestDetails = null;
+            foreach (var res in lst)
+            {
+                var distance = CalcDistance(value, res.Floor, res.Scrapy, res.Sell, res.Buy);
+
+                if (distance > maxDistance)
+                {
+                    maxDistance = distance;
+                    bestDetails = res;
+                }
+            }
+
+            lst.Remove(bestDetails);
+        }
+
+        private Result KNN(Result[] result)
         {
             var mxFloor = result.Max(r => r.Floor) + 0.000001m;
             var mxScrapy = result.Max(r => r.Scrapy) + 0.000001m;
@@ -91,13 +124,12 @@ namespace Tests
                         for (decimal buy = mnBuy; buy < mxBuy; buy = buy + 0.005m)
                         {
                             double distance = 0;
+                            double step = 1.5 / (result.Length - 1);
+                            double factor = 2D;
                             foreach (var res in result)
                             {
-                                var temp = Math.Pow((double) (flr - res.Floor), 2);
-                                temp += Math.Pow((double)(spy - res.Scrapy), 2);
-                                temp += Math.Pow((double)(sel - res.Sell), 2);
-                                temp += Math.Pow((double)(buy - res.Buy), 2);
-                                distance += Math.Sqrt(temp);
+                                distance += CalcDistance(res, flr, spy, sel, buy) * factor;
+                                factor -= step;
                             }
 
                             if (distance < minDistance)
@@ -110,8 +142,18 @@ namespace Tests
                 }
             }
 
-            return "Floor,Sell,Buy,Scrapy" + Environment.NewLine +
-                   $"{minDetails.Floor.ToString($"#.####")},{minDetails.Sell.ToString($"#.####")},{minDetails.Buy.ToString($"#.####")},{minDetails.Scrapy.ToString($"#.####")}";
+            return minDetails;
+        }
+
+        private static double CalcDistance(Result res, decimal flr, decimal spy, decimal sel, decimal buy)
+        {
+            double temp;
+            temp = Math.Pow((double) (flr - res.Floor), 2);
+            temp += Math.Pow((double) (spy - res.Scrapy), 2);
+            temp += Math.Pow((double) (sel - res.Sell), 2);
+            temp += Math.Pow((double) (buy - res.Buy), 2);
+            temp = Math.Sqrt(temp);
+            return temp;
         }
     }
 
