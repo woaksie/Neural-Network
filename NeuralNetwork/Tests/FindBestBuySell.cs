@@ -13,10 +13,12 @@ namespace Tests
     [UseReporter(typeof(DiffReporter))]
     public class FindBestBuySell
     {
+        private static readonly string Symbol = "QTEC";  // "IAU";
+
         [Test]
         public void LoadData()
         {
-            var ds = SQLDatabase.Instance.ReadData("QTEC").GetData();
+            var ds = GetData();
 
             var sut = new ProfitTester(ds);
 
@@ -27,10 +29,15 @@ namespace Tests
             Approvals.Verify(result.First().Audit);
         }
 
+        private static IList<DataElement> GetData()
+        {
+            return SQLDatabase.Instance.ReadData(Symbol).GetData();
+        }
+
         [Test]
         public void Top50ResultsAndParameters()
         {
-            var ds = SQLDatabase.Instance.ReadData("QTEC").GetData();
+            var ds = GetData();
 
             var sut = new ProfitTester(ds);
 
@@ -75,13 +82,13 @@ namespace Tests
             double minDistance = double.MaxValue;
             Result minDetails = null;
 
-            for (decimal flr = mnFloor; flr <= mxFloor; flr = flr + ((mxFloor-mnFloor)/7.999m))
+            for (decimal flr = mnFloor; flr <= mxFloor; flr = flr + 0.005m)
             {
-                for (decimal spy = mnScrapy; spy < mxScrapy; spy = spy + ((mxScrapy - mnScrapy) / 7.999m))
+                for (decimal spy = mnScrapy; spy < mxScrapy; spy = spy + 0.005m)
                 {
-                    for (decimal sel = mnSell; sel < mxSell; sel = sel + ((mxSell - mnSell) / 7.999m))
+                    for (decimal sel = mnSell; sel < mxSell; sel = sel + 0.005m)
                     {
-                        for (decimal buy = mnBuy; buy < mxBuy; buy = buy + ((mxBuy - mnBuy) / 7.999m))
+                        for (decimal buy = mnBuy; buy < mxBuy; buy = buy + 0.005m)
                         {
                             double distance = 0;
                             foreach (var res in result)
@@ -133,28 +140,28 @@ namespace Tests
         {
             _audit = new StringBuilder();
 
-            decimal cutLossPercent = 0.0005m;
-            while (cutLossPercent < 0.15m)
+            decimal floor = 0.0005m;
+            while (floor < 0.15m)
             {
-                decimal sellPercent = 0.0005m;
-                while (sellPercent < 0.1m)
+                decimal sell = 0.0005m;
+                while (sell < 0.09m)
                 {
-                    decimal buyPercent = 0.0005m;
-                    while (buyPercent < 0.1m)
+                    decimal buy = 0.0005m;
+                    while (buy < 0.09m)
                     {
-                        decimal notWorthItProfit = 0.0005m;
-                        while (notWorthItProfit < 0.15m)
+                        decimal scrapy = 0.0005m;
+                        while (scrapy < 0.25m)
                         {
-                            var result = CalculateProfit(cutLossPercent, sellPercent, buyPercent, notWorthItProfit);
+                            var result = CalculateProfit(floor, sell, buy, scrapy);
                             StoreResults(result);
 
-                            notWorthItProfit += 0.005m;
+                            scrapy += 0.005m;
                         }
-                        buyPercent += 0.005m;
+                        buy += 0.005m;
                     }
-                    sellPercent += 0.005m;
+                    sell += 0.005m;
                 }
-                cutLossPercent += 0.005m;
+                floor += 0.005m;
             }
 
             return _results;
@@ -262,7 +269,7 @@ namespace Tests
 
                             scrapy = open * (1m + notWorthItProfit);
                             floor = open * (1m - cutLossPercent);
-                            max = open;
+                            max = high;
                         }
                         else              // can buy at buy price
                         {
@@ -272,7 +279,7 @@ namespace Tests
 
                             scrapy = buy * (1m + notWorthItProfit);
                             floor = buy * (1m - cutLossPercent);
-                            max = buy;
+                            max = high;
                         }
 
                         holdShares = true;
@@ -335,6 +342,13 @@ namespace Tests
 
         private void StoreResults(Result result)
         {
+            if (_results.Count > 100)
+            {
+                var temp = _results.OrderBy(r => r.Cash).First();
+                if (temp.Cash > result.Cash)
+                    return;
+                _results.Remove(temp);
+            }
             _results.Add(result);
         }
     }
