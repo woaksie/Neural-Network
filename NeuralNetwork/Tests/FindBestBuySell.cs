@@ -29,11 +29,6 @@ namespace Tests
             Approvals.Verify(result.First().Audit);
         }
 
-        private static IList<DataElement> GetData()
-        {
-            return SQLDatabase.Instance.ReadData(Symbol).GetData();
-        }
-
         [Test]
         public void Top50ResultsAndParameters()
         {
@@ -46,6 +41,11 @@ namespace Tests
             var result = results.OrderByDescending(r => r.Cash).Take(50).ToArray();
 
             Approvals.Verify(Expand(result));
+        }
+
+        private static IList<DataElement> GetData()
+        {
+            return SQLDatabase.Instance.ReadData(Symbol).GetData();
         }
 
         private string Expand(Result[] result)
