@@ -52,14 +52,14 @@ namespace Tests
         {
             StringBuilder res = new StringBuilder();
 
-            KNearest(result, res);
+            var toots = KNearest(result, res);
 
-            res.AppendLine("Floor,Scrapy,Sell,Buy,Cash,Txns");
+            res.AppendLine("Floor,Sell,Buy,Scrapy,Txns,Cash");
 
             foreach (var val in result)
             {
-                var line = $"{val.Floor},{val.Scrapy},{val.Sell},{val.Buy},{val.Cash},{val.Txn}";
-                if (line.Contains("0.0505,0.0255,0.0155,0.0005"))
+                var line = $"{val.Floor},{val.Sell},{val.Buy},{val.Scrapy},{val.Txn},{val.Cash}";
+                if (line.Contains(toots))
                     line = $"{line} ****";
                 res.AppendLine(line);
             }
@@ -67,7 +67,7 @@ namespace Tests
             return res.ToString();
         }
 
-        private void KNearest(Result[] result, StringBuilder res)
+        private string KNearest(Result[] result, StringBuilder res)
         {
             var lst = result.ToList();
             var value = KNN(result);
@@ -78,8 +78,9 @@ namespace Tests
                 value = KNN(lst.ToArray());
             }
 
-            res.AppendLine("Floor,Sell,Buy,Scrapy" + Environment.NewLine +
-                           $"{value.Floor.ToString($"#.####")},{value.Sell.ToString($"#.####")},{value.Buy.ToString($"#.####")},{value.Scrapy.ToString($"#.####")}");
+            var best = $"{value.Floor.ToString($"0.####")},{value.Sell.ToString($"0.####")},{value.Buy.ToString($"0.####")},{value.Scrapy.ToString($"0.####")}";
+            res.AppendLine("Floor,Sell,Buy,Scrapy" + Environment.NewLine + best);
+            return best;
         }
 
         private void RemoveOutLier(List<Result> lst, Result value)
