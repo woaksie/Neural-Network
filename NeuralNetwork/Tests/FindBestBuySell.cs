@@ -13,7 +13,7 @@ namespace Tests
     [UseReporter(typeof(DiffReporter))]
     public class FindBestBuySell
     {
-        private static readonly string Symbol = "QTEC";  // "IAU";
+        private static readonly string Symbol = "QTEC";  // "IAU";  "QTEC"
 
         [Test]
         public void LoadData()
