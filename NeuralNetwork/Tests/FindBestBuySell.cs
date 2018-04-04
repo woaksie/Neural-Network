@@ -262,11 +262,7 @@ namespace Tests
                 if (holdShares)        // looking for sell signal
                     if (low < floor)   // cap loss
                     {
-                        if (open > floor) // got a crack at floor value
-                            cash = SellShares(floor, shares, comm, cash);
-                        else // take open price 
-                            cash = SellShares(open, shares, comm, cash);
-
+                        cash = SellShares(open > floor ? floor : open, shares, comm, cash);
                         holdShares = false;
                         shares = 0;
                         txn += 1;
@@ -277,11 +273,7 @@ namespace Tests
                     {
                         if (low < sell)   // time to sell
                         {
-                            if (open > sell) // got sell price
-                                cash = SellShares(sell, shares, comm, cash);
-                            else // have to make do with open price
-                                cash = SellShares(open, shares, comm, cash);
-
+                            cash = SellShares(open > sell ? sell : open, shares, comm, cash);
                             holdShares = false;
                             shares = 0;
                             txn += 1;
@@ -291,42 +283,29 @@ namespace Tests
                         else  // still looking good to hold
                         {
                             if (high > scrapy)
-                            {
                                 if (high >= max)
                                 {
                                     sell = high * (1m - sellPercent);
                                     max = high;
                                 }
-                            }
                         }
                     }
                 else      // looking for buy signal
                 {
                     if (high > buy)  // time to buy
                     {
-                        if (open > buy)   // have to go with open price
-                        {
-                            temp = BuyShares(cash, open);
-                            shares = temp.Shares;
-                            cash = temp.Change;
+                        var price = open > buy 
+                            ? open 
+                            : buy;
+                        temp = BuyShares(cash, price);
+                        shares = temp.Shares;
+                        cash = temp.Change;
 
-                            scrapy = open * (1m + notWorthItProfit);
-                            floor = open * (1m - cutLossPercent);
-                            max = high;
-                        }
-                        else              // can buy at buy price
-                        {
-                            temp = BuyShares(cash, buy);
-                            shares = temp.Shares;
-                            cash = temp.Change;
-
-                            scrapy = buy * (1m + notWorthItProfit);
-                            floor = buy * (1m - cutLossPercent);
-                            max = high;
-                        }
-
-                        holdShares = true;
+                        scrapy = price * (1m + notWorthItProfit);
+                        floor = price * (1m - cutLossPercent);
+                        max = high;
                         sell = -1m;
+                        holdShares = true;
                     }
                     else   // stay out of the market
                     {
