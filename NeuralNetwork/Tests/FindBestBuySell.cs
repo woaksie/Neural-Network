@@ -231,6 +231,7 @@ namespace Tests
             decimal open = (decimal) day1[(int) StockIndex.Open];
             decimal high = (decimal) day1[(int) StockIndex.High];
             decimal low = (decimal) day1[(int) StockIndex.Low];
+            decimal close = (decimal) day1[(int) StockIndex.Close];
 
             var max = high;
             var min = low;
@@ -244,15 +245,16 @@ namespace Tests
             shares = temp.Shares;
             cash = temp.Change;
 
-            _audit.AppendLine("Date,open,high,low,holdShares,cash,shares,max,min,floor,scrapy,sell,buy");
+            _audit.AppendLine("Date,open,high,low,close,holdShares,cash,shares,max,min,floor,scrapy,sell,buy");
 
             foreach (var ele in _elements)
             {
-                open = (decimal) ele.Values[(int)StockIndex.Open];
+                open = (decimal) ele.Values[(int) StockIndex.Open];
                 high = (decimal) ele.Values[(int) StockIndex.High];
-                low = (decimal) ele.Values[(int)StockIndex.Low];
+                low = (decimal) ele.Values[(int) StockIndex.Low];
+                close = (decimal) ele.Values[(int) StockIndex.Close];
 
-                _audit.AppendLine($"{ele.Key.ToShortDateString()},{open},{high},{low},{holdShares},{cash},{shares},{max},{min},{floor},{scrapy},{sell},{buy}");
+                _audit.AppendLine($"{ele.Key.ToShortDateString()},{open},{high},{low},{close},{holdShares},{cash},{shares},{max},{min},{floor},{scrapy},{sell},{buy}");
 
                 if (holdShares)
                     daysIn++;
@@ -315,9 +317,7 @@ namespace Tests
                             buy = low * (1m + buyPercent);
                         }
                         else  // bide your time
-                        {
-                            // wait
-                        }
+                        {}
                     }
                 }
             }
@@ -329,6 +329,8 @@ namespace Tests
             }
 
             _audit.AppendLine($"Percent return per month {DoAnnualPercentage(_startCash, cash, _elements[0].Key, _elements.Last().Key)}%");
+            _audit.AppendLine($"Days in {daysIn}");
+            _audit.AppendLine($"Days out {daysOut}");
 
             return new Result(cash, txn, cutLossPercent, sellPercent, buyPercent, notWorthItProfit, daysIn, daysOut, _audit);
         }
