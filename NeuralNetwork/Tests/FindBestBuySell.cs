@@ -245,7 +245,8 @@ namespace Tests
             shares = temp.Shares;
             cash = temp.Change;
 
-            _audit.AppendLine("Date,open,high,low,close,holdShares,cash,shares,max,min,floor,scrapy,sell,buy");
+            var heading = "Date,open,high,low,close,holdShares,cash,shares,max,min,floor,scrapy,sell,buy";
+            _audit.AppendLine(heading);
 
             foreach (var ele in _elements)
             {
@@ -285,6 +286,8 @@ namespace Tests
                         else  // still looking good to hold
                         {
                             if (high > scrapy)
+                                if (sell < 0)
+                                    sell = high * (1m - sellPercent);
                                 if (high >= max)
                                 {
                                     sell = high * (1m - sellPercent);
@@ -328,6 +331,7 @@ namespace Tests
                 txn += 1;
             }
 
+            _audit.AppendLine(heading);
             _audit.AppendLine($"Percent return per month {DoAnnualPercentage(_startCash, cash, _elements[0].Key, _elements.Last().Key)}%");
             _audit.AppendLine($"Days in {daysIn}");
             _audit.AppendLine($"Days out {daysOut}");
