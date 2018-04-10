@@ -551,7 +551,8 @@ Date,open,high,low,close,holdShares,cash,shares,max,min,floor,scrapy,sell,buy
 2018-04-04,73.2,76.16,73.13,75.95,True,61.24,61,75.0542,73.22,71.224790,75.030410,-1,73.256610
 2018-04-05,76.5,76.7,75.18,75.66,True,61.24,61,76.16,73.22,71.224790,75.030410,74.598720,73.256610
 2018-04-06,74.77,75.401,73.28,73.64,True,61.24,61,76.7,73.22,71.224790,75.030410,75.12765,73.256610
+2018-04-09,74.21,75.89,74.14,74.14,False,4617.22,0,76.7,73.28,71.224790,75.030410,75.12765,73.316640
 Date,open,high,low,close,holdShares,cash,shares,max,min,floor,scrapy,sell,buy
-Percent return per month 46.870844897245%
+Percent return per month 46.5861948142918%
 Days in 501
-Days out 49
+Days out 50
