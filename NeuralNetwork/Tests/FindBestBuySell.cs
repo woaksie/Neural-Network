@@ -265,7 +265,10 @@ namespace Tests
                 if (holdShares)        // looking for sell signal
                     if (low < floor)   // cap loss
                     {
-                        cash = SellShares(open > floor ? floor : open, shares, comm, cash);
+                        var price = open > floor 
+                            ? floor 
+                            : open;
+                        cash = SellShares(price, shares, comm, cash);
                         holdShares = false;
                         shares = 0;
                         txn += 1;
@@ -276,7 +279,10 @@ namespace Tests
                     {
                         if (low < sell)   // time to sell
                         {
-                            cash = SellShares(open > sell ? sell : open, shares, comm, cash);
+                            var price = open > sell 
+                                ? sell 
+                                : open;
+                            cash = SellShares(price, shares, comm, cash);
                             holdShares = false;
                             shares = 0;
                             txn += 1;
@@ -286,9 +292,12 @@ namespace Tests
                         else  // still looking good to hold
                         {
                             if (high > scrapy)
-                                if (sell < 0)
+                                if (sell < 0)  // first time over scrapy
+                                {
                                     sell = high * (1m - sellPercent);
-                                if (high >= max)
+                                    max = high;
+                                }
+                                else if (high >= max)
                                 {
                                     sell = high * (1m - sellPercent);
                                     max = high;
