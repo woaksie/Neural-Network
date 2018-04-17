@@ -1,9 +1,13 @@
 ﻿using System.Collections.Generic;
+using System.Configuration;
 using System.Data.SqlClient;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Memory;
+using NeuralNetwork.Database.Config;
 
 namespace NeuralNetwork.Database
 {
@@ -15,8 +19,15 @@ namespace NeuralNetwork.Database
         {
             get
             {
-                var lines = File.ReadAllLines(@"D:\Projects\SQL.txt");
-                return new SQLDatabase(lines[0]);
+                var settings = new AppSettingsConfigurationSource();
+
+                var provider = settings.Build();
+                provider.Load();
+
+                if (provider.TryGet(ConfigKeys.GetKey(ConfigKeys.KeyNames.DatabaseConnectionString), out var conStr))
+                    return new SQLDatabase(conStr);
+
+                throw new ConfigurationErrorsException("No database configuration");
             }
         }
 
