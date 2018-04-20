@@ -14,15 +14,12 @@ namespace Tests
     public class FindBestBuySell
     {
         private static readonly string Symbol = "QTEC";  // "IAU";  "QTEC"
+        private static IList<Result> _results = null;
 
         [Test]
         public void LoadData()
         {
-            var ds = GetData();
-
-            var sut = new ProfitTester(ds);
-
-            IList<Result> results = sut.BestSell();
+            IList<Result> results = Results();
 
             var result = results.OrderByDescending(r => r.Cash).ToArray();
 
@@ -32,15 +29,22 @@ namespace Tests
         [Test]
         public void Top50ResultsAndParameters()
         {
-            var ds = GetData();
-
-            var sut = new ProfitTester(ds);
-
-            IList<Result> results = sut.BestSell();
+            IList<Result> results = Results();
 
             var result = results.OrderByDescending(r => r.Cash).Take(50).ToArray();
 
             Approvals.Verify(Expand(result));
+        }
+
+        private static IList<Result> Results()
+        {
+            if (_results != null)
+                return _results;
+
+            var sut = new ProfitTester(GetData());
+            _results = sut.BestSell();
+
+            return _results;
         }
 
         private static IList<DataElement> GetData()
