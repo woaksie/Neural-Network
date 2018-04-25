@@ -332,8 +332,8 @@ namespace Tests
                             min = low;
                             buy = low * (1m + buyPercent);
                         }
-                        else  // bide your time
-                        {}
+                        else
+                        { } // bide your time
                     }
                 }
             }
